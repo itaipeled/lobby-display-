@@ -240,23 +240,17 @@
         .notice-body { flex: 1; min-width: 0; }
         .notice-body h3 { font-size: 1.05rem; margin-bottom: 6px; color: var(--ink); }
         .notice-body p { font-size: 0.98rem; line-height: 1.6; color: var(--stone); }
-        .notice-qr {
-            background: #fff;
-            padding: 8px;
-            border-radius: 8px;
-            border: 1px solid var(--hairline);
-            flex-shrink: 0;
-            text-align: center;
-            align-self: center;
-        }
-        .notice-qr img { width: 64px; height: 64px; display: block; }
-        .notice-qr span { font-size: 0.62rem; color: #333; display: block; margin-top: 4px; font-family: 'Rubik', sans-serif; }
         .notice-dots { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
         .notice-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--hairline); }
         .notice-dot.active { background: var(--sage); }
     </style>
 </head>
 <body>
+
+    <!-- מוזיקת רקע נעימה - לולאה עדינה -->
+    <!-- מוזיקת רקע נעימה - פסנתר, לולאה עדינה -->
+    <audio id="bgMusic" src="https://archive.org/download/32LifeAmbient/31%20Positive%20Piano.mp3" loop preload="auto"></audio>
+
 
     <div class="header-bar">
         <div class="header-right">רחוב הברוש <span class="building-no">7</span>, באר יעקב</div>
@@ -286,11 +280,11 @@
             <div class="top-row">
                 <div class="shabbat-section">
                     <div class="shabbat-row">
-                        <span class="shabbat-title">🕯️ כניסת שבת</span>
+                        <span class="shabbat-title">🕯️ כניסת שבת/חג</span>
                         <span class="shabbat-time" id="candleTime">--:--</span>
                     </div>
                     <div class="shabbat-row">
-                        <span class="shabbat-title">⭐ צאת שבת</span>
+                        <span class="shabbat-title">⭐ צאת שבת/חג</span>
                         <span class="shabbat-time" id="havdalahTime">--:--</span>
                     </div>
                 </div>
@@ -356,44 +350,69 @@
         updateClock();
         setInterval(updateClock, 1000);
 
-        /* ===== זמני שבת - Hebcal API (מתעדכן אוטומטית כל שבוע) ===== */
+        /* ===== זמני כניסה/יציאה - שבתות וחגים יחד (Hebcal) - מתעדכן אוטומטית ===== */
         async function loadShabbatTimes() {
             try {
-                const cached = localStorage.getItem('shabbatCache');
-                const cachedData = cached ? JSON.parse(cached) : null;
-                const weekKey = getWeekKey();
-
-                if (cachedData && cachedData.weekKey === weekKey) {
-                    document.getElementById('candleTime').textContent = cachedData.candle;
-                    document.getElementById('havdalahTime').textContent = cachedData.havdalah;
-                    return;
+                const now = new Date();
+                const cachedRaw = localStorage.getItem('shabbatCache');
+                if (cachedRaw) {
+                    const c = JSON.parse(cachedRaw);
+                    // כל עוד לא עברנו את זמן היציאה השמור - אין צורך לרענן
+                    if (c.exitTs && now.getTime() < c.exitTs) {
+                        document.getElementById('candleTime').textContent = c.candle;
+                        document.getElementById('havdalahTime').textContent = c.havdalah;
+                        return;
+                    }
                 }
 
-                const url = `https://www.hebcal.com/shabbat?cfg=json&latitude=${LAT}&longitude=${LON}&tzid=Asia/Jerusalem&m=40`;
+                const fmt = d => d.toISOString().slice(0, 10);
+                const endDate = new Date(now.getTime() + 21 * 86400000); // חלון של 3 שבועות קדימה
+                const url = `https://www.hebcal.com/hebcal?cfg=json&v=1&maj=on&min=on&mod=on&nx=on&ss=on&mf=on&c=on&M=on` +
+                    `&latitude=${LAT}&longitude=${LON}&tzid=Asia/Jerusalem&start=${fmt(now)}&end=${fmt(endDate)}`;
                 const res = await fetch(url);
                 const data = await res.json();
-                let candle = '--:--', havdalah = '--:--';
-                (data.items || []).forEach(item => {
-                    const t = new Date(item.date);
-                    const timeStr = t.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jerusalem' });
-                    if (item.category === 'candles') candle = timeStr;
-                    if (item.category === 'havdalah') havdalah = timeStr;
-                });
+
+                const events = (data.items || [])
+                    .filter(i => i.category === 'candles' || i.category === 'havdalah')
+                    .map(i => ({ ...i, ts: new Date(i.date).getTime() }))
+                    .sort((a, b) => a.ts - b.ts);
+
+                const nextEntry = events.find(i => i.category === 'candles' && i.ts >= now.getTime());
+                let candle = '--:--', havdalah = '--:--', exitTs = null;
+
+                if (nextEntry) {
+                    candle = new Date(nextEntry.date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jerusalem' });
+                    const nextExit = events.find(i => i.category === 'havdalah' && i.ts > nextEntry.ts);
+                    if (nextExit) {
+                        havdalah = new Date(nextExit.date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jerusalem' });
+                        exitTs = nextExit.ts;
+                    }
+                }
+
                 document.getElementById('candleTime').textContent = candle;
                 document.getElementById('havdalahTime').textContent = havdalah;
-                localStorage.setItem('shabbatCache', JSON.stringify({ weekKey, candle, havdalah }));
+                localStorage.setItem('shabbatCache', JSON.stringify({ candle, havdalah, exitTs }));
             } catch (e) {
-                console.error('Shabbat fetch failed', e);
+                console.error('Shabbat/Holiday fetch failed', e);
             }
-        }
-        function getWeekKey() {
-            const now = new Date();
-            const onejan = new Date(now.getFullYear(), 0, 1);
-            const week = Math.ceil((((now - onejan) / 86400000) + onejan.getDay() + 1) / 7);
-            return now.getFullYear() + '-W' + week;
         }
         loadShabbatTimes();
         setInterval(loadShabbatTimes, 6 * 60 * 60 * 1000);
+
+        /* ===== מוזיקת רקע - השמעה אוטומטית בעוצמה נעימה ===== */
+        (function initBackgroundMusic() {
+            const audio = document.getElementById('bgMusic');
+            audio.volume = 0.22;
+            const tryPlay = () => {
+                audio.play().catch(() => {
+                    // הדפדפן חסם השמעה אוטומטית - ננסה שוב בקליק/מגע ראשון
+                    const resume = () => { audio.play(); document.removeEventListener('click', resume); document.removeEventListener('touchstart', resume); };
+                    document.addEventListener('click', resume, { once: true });
+                    document.addEventListener('touchstart', resume, { once: true });
+                });
+            };
+            tryPlay();
+        })();
 
         /* ===== מזג אוויר - Open-Meteo (חינמי, ללא מפתח) ===== */
         const WMO_ICON = {
@@ -514,22 +533,14 @@
         setInterval(loadNews, 20 * 1000);
 
         /* ===== הודעות ועד הבית - קרוסלה מתחלפת ===== */
-        const HOMBI_URL = 'https://hombi.co/download.html';
-        const HOMBI_SIGNUP_URL = 'https://hombi.co/signinwithcode.html?code=yVjjSn4w4';
-        const qrImg = (url) => 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=0&data=' + encodeURIComponent(url);
-
         const notices = [
             {
                 title: 'קריאות שירות ותקלות',
-                body: '1. סרקו את הברקוד הראשון להורדת אפליקציית Hombi.<br>2. לאחר ההורדה, סרקו את הברקוד השני להרשמה עם קוד הבניין.',
-                qrs: [
-                    { label: '1. הורדה', url: qrImg(HOMBI_URL) },
-                    { label: '2. הרשמה', url: qrImg(HOMBI_SIGNUP_URL) }
-                ]
+                body: 'יש לפתוח קריאת שירות באפליקציית OSX MANAGER של הבניין.'
             },
             {
                 title: 'שריון חדר דיירים',
-                body: 'ניתן לשריין את חדר הדיירים בבניין ישירות דרך אפליקציית Hombi.'
+                body: 'ניתן לשריין את חדר הדיירים בבניין ישירות דרך אפליקציית OSX MANAGER.'
             }
         ];
         let noticeIndex = 0;
@@ -542,14 +553,7 @@
         }
         function showNotice(i) {
             const n = notices[i];
-            const qrsHtml = (n.qrs || []).map(q =>
-                `<div class="notice-qr"><img src="${q.url}" alt="ברקוד ${q.label}"><span>${q.label}</span></div>`
-            ).join('');
-            document.getElementById('noticeBody').innerHTML =
-                `<div class="notice-slide-inner" style="display:flex; gap:14px; align-items:center; flex:1;">
-                    <div style="flex:1;"><h3>${n.title}</h3><p>${n.body}</p></div>
-                    ${qrsHtml}
-                </div>`;
+            document.getElementById('noticeBody').innerHTML = `<h3>${n.title}</h3><p>${n.body}</p>`;
             document.getElementById('noticeCounter').textContent = `${i + 1} / ${notices.length}`;
             renderNoticeDots();
 
