@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>שילוט דיגיטלי - ועד הבית</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Rubik:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a1128;
+            --panel: #111a33;
+            --panel-2: #0e1730;
+            --hairline: #223255;
+            --ink: #eef1f8;
+            --stone: #8b98b8;
+            --brass: #e3a857;
+            --brass-deep: #f0c98a;
+            --sage: #4fa8a0;
+            --rust: #d8483a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; }
+
+        body {
+            font-family: 'Rubik', 'Segoe UI', Tahoma, sans-serif;
+            background:
+                radial-gradient(ellipse 900px 500px at 85% -10%, rgba(227, 168, 87, 0.08), transparent),
+                radial-gradient(ellipse 700px 500px at 10% 110%, rgba(79, 168, 160, 0.07), transparent),
+                var(--bg);
+            color: var(--ink);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* שורת כותרת עליונה */
+        .header-bar {
+            background-color: var(--panel-2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 28px;
+            font-size: 1rem;
+            border-bottom: 1px solid var(--hairline);
+            border-top: 3px solid var(--brass);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+            flex-wrap: wrap;
+            gap: 10px;
+            position: relative;
+            z-index: 2;
+        }
+        .header-right {
+            font-family: 'Frank Ruhl Libre', serif;
+            font-weight: 500;
+            font-size: 1.15rem;
+            letter-spacing: 0.2px;
+            color: var(--ink);
+        }
+        .header-right .building-no { color: var(--brass-deep); }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--stone);
+            font-size: 0.92rem;
+        }
+        .status-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--sage);
+            box-shadow: 0 0 8px var(--sage);
+            display: inline-block;
+        }
+
+        /* מבנה ראשי */
+        .main-container { display: flex; flex: 1; flex-direction: column; }
+
+        @media (min-width: 769px) {
+            .main-container { flex-direction: row; height: calc(100vh - 58px); overflow: hidden; }
+            .left-column {
+                width: 33%;
+                border-left: 1px solid var(--hairline);
+                box-shadow: 6px 0 14px -10px rgba(0, 0, 0, 0.4);
+                border-bottom: none;
+                height: 100%;
+            }
+            .right-column { width: 67%; height: 100%; overflow-y: auto; }
+        }
+
+        /* טור חדשות */
+        .left-column {
+            background-color: var(--panel-2);
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            border-bottom: 1px solid var(--hairline);
+            min-height: 320px;
+        }
+        .news-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+        .news-header .pulse {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--rust);
+            animation: pulse 2s infinite;
+            flex-shrink: 0;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(216, 72, 58, 0.5); }
+            70% { box-shadow: 0 0 0 9px rgba(216, 72, 58, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(216, 72, 58, 0); }
+        }
+        .news-header .label { font-family: 'Frank Ruhl Libre', serif; font-weight: 700; font-size: 1.08rem; color: var(--ink); }
+
+        .news-list-viewport {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            mask-image: linear-gradient(to bottom, transparent 0, black 24px, black calc(100% - 24px), transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 24px, black calc(100% - 24px), transparent 100%);
+        }
+        .news-track {
+            display: flex;
+            flex-direction: column;
+            will-change: transform;
+        }
+        .news-track.scrolling {
+            animation-name: scrollNews;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+        @keyframes scrollNews {
+            from { transform: translateY(0); }
+            to { transform: translateY(-50%); }
+        }
+        .news-item {
+            padding: 13px 14px;
+            margin-bottom: 2px;
+            background: var(--panel);
+            border-radius: 8px;
+            border: 1px solid var(--hairline);
+        }
+        .news-item + .news-item { margin-top: 8px; }
+        .news-item .news-time { color: var(--brass-deep); font-size: 0.8rem; margin-bottom: 4px; font-variant-numeric: tabular-nums; font-weight: 600; }
+        .news-item .news-title { font-size: 0.98rem; line-height: 1.55; color: var(--ink); }
+        .news-footer { padding-top: 10px; color: var(--stone); font-size: 0.75rem; text-align: center; }
+
+        /* טור ימין */
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            padding: 22px 26px;
+            gap: 16px;
+            justify-content: space-between;
+        }
+
+        .top-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+        .clock-section { text-align: center; flex: 1; min-width: 200px; }
+        .greeting { font-family: 'Frank Ruhl Libre', serif; font-size: 1.2rem; font-weight: 500; color: var(--brass-deep); font-style: italic; }
+        .time {
+            font-size: clamp(2.8rem, 7vw, 4.6rem);
+            font-weight: 700; line-height: 1; margin: 6px 0;
+            letter-spacing: 1px; font-variant-numeric: tabular-nums;
+            color: var(--ink);
+        }
+        .date { font-size: 1.02rem; color: var(--stone); }
+
+        .shabbat-section {
+            background: linear-gradient(160deg, rgba(227, 168, 87, 0.16), rgba(227, 168, 87, 0.04));
+            padding: 14px 20px;
+            border-radius: 10px;
+            border: 1px solid var(--hairline);
+            border-right: 4px solid var(--brass);
+            min-width: 156px;
+        }
+        .shabbat-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+        .shabbat-row + .shabbat-row { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--hairline); }
+        .shabbat-title { font-size: 0.85rem; color: var(--brass-deep); font-weight: 600; white-space: nowrap; }
+        .shabbat-time { font-size: 1.15rem; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+        /* מזג אוויר */
+        .weather-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .forecast-cards { display: flex; gap: 10px; flex: 1; min-width: 220px; }
+        .forecast-card {
+            background-color: var(--panel);
+            border: 1px solid var(--hairline);
+            border-radius: 10px;
+            padding: 10px 8px;
+            text-align: center;
+            flex: 1;
+            min-width: 70px;
+        }
+        .forecast-card .day-name { font-size: 0.82rem; color: var(--stone); margin-bottom: 4px; }
+        .forecast-card .day-icon { font-size: 1.3rem; margin-bottom: 4px; }
+        .forecast-card .day-temps { font-size: 0.88rem; font-variant-numeric: tabular-nums; }
+        .forecast-card .day-temps .low { color: var(--stone); }
+        .forecast-card .day-temps .high { color: var(--brass-deep); font-weight: 700; }
+
+        .current-weather {
+            background-color: var(--panel);
+            border: 1px solid var(--hairline);
+            border-radius: 10px;
+            padding: 10px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 180px;
+        }
+        .current-weather .cw-icon { font-size: 2rem; }
+        .current-weather .cw-info { text-align: right; }
+        .current-weather .cw-temp { font-size: 1.5rem; font-weight: 700; color: var(--brass-deep); }
+        .current-weather .cw-desc { font-size: 0.85rem; color: var(--stone); }
+        .current-weather .cw-loc { font-size: 0.8rem; color: var(--stone); }
+
+        /* הודעות ועד הבית - קרוסלה */
+        .bottom-row {
+            background-color: var(--panel);
+            border-radius: 10px;
+            padding: 18px 22px;
+            border: 1px solid var(--hairline);
+            border-right: 4px solid var(--sage);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 140px;
+        }
+        .notice-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px;
+        }
+        .notice-title { font-family: 'Frank Ruhl Libre', serif; color: var(--sage); font-size: 1.15rem; font-weight: 700; }
+        .notice-counter { color: var(--stone); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+        .notice-slide { flex: 1; display: flex; gap: 12px; align-items: flex-start; }
+        .notice-bar { width: 4px; border-radius: 2px; background: rgba(79, 168, 160, 0.25); flex-shrink: 0; align-self: stretch; overflow: hidden; position: relative; }
+        .notice-bar-fill { position: absolute; top: 0; right: 0; left: 0; height: 0%; background: var(--sage); }
+        .notice-body { flex: 1; min-width: 0; }
+        .notice-body h3 { font-size: 1.05rem; margin-bottom: 6px; color: var(--ink); }
+        .notice-body p { font-size: 0.98rem; line-height: 1.6; color: var(--stone); }
+        .notice-qr {
+            background: #fff;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--hairline);
+            flex-shrink: 0;
+            text-align: center;
+            align-self: center;
+        }
+        .notice-qr img { width: 64px; height: 64px; display: block; }
+        .notice-qr span { font-size: 0.62rem; color: #333; display: block; margin-top: 4px; font-family: 'Rubik', sans-serif; }
+        .notice-dots { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
+        .notice-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--hairline); }
+        .notice-dot.active { background: var(--sage); }
+    </style>
+</head>
+<body>
+
+    <div class="header-bar">
+        <div class="header-right">רחוב הברוש <span class="building-no">7</span>, באר יעקב</div>
+        <div class="header-left">
+            <span class="status-dot"></span>
+            <span>מחובר</span>
+        </div>
+    </div>
+
+    <div class="main-container">
+
+        <div class="left-column">
+            <div class="news-header">
+                <span class="pulse"></span>
+                <span class="label">ynet מבזקים</span>
+            </div>
+            <div class="news-list-viewport">
+                <div class="news-track" id="newsTrack">
+                    <div class="news-item"><div class="news-title">טוען מבזקים...</div></div>
+                </div>
+            </div>
+            <div class="news-footer" id="newsFooter"></div>
+        </div>
+
+        <div class="right-column">
+
+            <div class="top-row">
+                <div class="shabbat-section">
+                    <div class="shabbat-row">
+                        <span class="shabbat-title">🕯️ כניסת שבת</span>
+                        <span class="shabbat-time" id="candleTime">--:--</span>
+                    </div>
+                    <div class="shabbat-row">
+                        <span class="shabbat-title">⭐ צאת שבת</span>
+                        <span class="shabbat-time" id="havdalahTime">--:--</span>
+                    </div>
+                </div>
+                <div class="clock-section">
+                    <div class="greeting" id="greeting">יום נעים</div>
+                    <div class="time" id="clock">00:00</div>
+                    <div class="date" id="date">טוען תאריך...</div>
+                </div>
+            </div>
+
+            <div class="weather-row">
+                <div class="forecast-cards" id="forecastCards">
+                    <div class="forecast-card"><div class="day-name">...</div></div>
+                </div>
+                <div class="current-weather">
+                    <div class="cw-icon" id="cwIcon">🌙</div>
+                    <div class="cw-info">
+                        <div class="cw-loc">באר יעקב</div>
+                        <div class="cw-temp" id="cwTemp">--°</div>
+                        <div class="cw-desc" id="cwDesc">טוען...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-row">
+                <div class="notice-header">
+                    <span class="notice-title">📢 הודעות ועד הבית</span>
+                    <span class="notice-counter" id="noticeCounter">1 / 1</span>
+                </div>
+                <div class="notice-slide">
+                    <div class="notice-bar"><div class="notice-bar-fill" id="noticeBarFill"></div></div>
+                    <div class="notice-body" id="noticeBody">
+                        <h3></h3>
+                        <p>טוען הודעות...</p>
+                    </div>
+                </div>
+                <div class="notice-dots" id="noticeDots"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        /* ===== מיקום הבניין: באר יעקב ===== */
+        const LAT = 31.9438, LON = 34.8380;
+
+        /* ===== שעון ===== */
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent =
+                String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
+            const hour = now.getHours();
+            let greeting = "לילה טוב";
+            if (hour >= 5 && hour < 12) greeting = "בוקר טוב";
+            else if (hour >= 12 && hour < 17) greeting = "צהריים טובים";
+            else if (hour >= 17 && hour < 22) greeting = "ערב טוב";
+            document.getElementById('greeting').textContent = greeting;
+
+            document.getElementById('date').textContent =
+                now.toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        /* ===== זמני שבת - Hebcal API (מתעדכן אוטומטית כל שבוע) ===== */
+        async function loadShabbatTimes() {
+            try {
+                const cached = localStorage.getItem('shabbatCache');
+                const cachedData = cached ? JSON.parse(cached) : null;
+                const weekKey = getWeekKey();
+
+                if (cachedData && cachedData.weekKey === weekKey) {
+                    document.getElementById('candleTime').textContent = cachedData.candle;
+                    document.getElementById('havdalahTime').textContent = cachedData.havdalah;
+                    return;
+                }
+
+                const url = `https://www.hebcal.com/shabbat?cfg=json&latitude=${LAT}&longitude=${LON}&tzid=Asia/Jerusalem&m=40`;
+                const res = await fetch(url);
+                const data = await res.json();
+                let candle = '--:--', havdalah = '--:--';
+                (data.items || []).forEach(item => {
+                    const t = new Date(item.date);
+                    const timeStr = t.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jerusalem' });
+                    if (item.category === 'candles') candle = timeStr;
+                    if (item.category === 'havdalah') havdalah = timeStr;
+                });
+                document.getElementById('candleTime').textContent = candle;
+                document.getElementById('havdalahTime').textContent = havdalah;
+                localStorage.setItem('shabbatCache', JSON.stringify({ weekKey, candle, havdalah }));
+            } catch (e) {
+                console.error('Shabbat fetch failed', e);
+            }
+        }
+        function getWeekKey() {
+            const now = new Date();
+            const onejan = new Date(now.getFullYear(), 0, 1);
+            const week = Math.ceil((((now - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+            return now.getFullYear() + '-W' + week;
+        }
+        loadShabbatTimes();
+        setInterval(loadShabbatTimes, 6 * 60 * 60 * 1000);
+
+        /* ===== מזג אוויר - Open-Meteo (חינמי, ללא מפתח) ===== */
+        const WMO_ICON = {
+            0: ['☀️', 'בהיר'], 1: ['🌤️', 'בהיר בעיקר'], 2: ['⛅', 'מעונן חלקית'], 3: ['☁️', 'מעונן'],
+            45: ['🌫️', 'ערפל'], 48: ['🌫️', 'ערפל'],
+            51: ['🌦️', 'טפטוף'], 53: ['🌦️', 'טפטוף'], 55: ['🌦️', 'טפטוף'],
+            61: ['🌧️', 'גשם קל'], 63: ['🌧️', 'גשם'], 65: ['🌧️', 'גשם חזק'],
+            80: ['🌦️', 'ממטרים'], 81: ['🌦️', 'ממטרים'], 82: ['⛈️', 'ממטרים עזים'],
+            95: ['⛈️', 'סופת רעמים'], 96: ['⛈️', 'סופת רעמים'], 99: ['⛈️', 'סופת רעמים']
+        };
+        function weatherIcon(code, isNight) {
+            const entry = WMO_ICON[code] || ['🌡️', 'לא ידוע'];
+            if (code === 0 && isNight) return ['🌙', 'בהיר'];
+            if (code === 1 && isNight) return ['🌙', 'בהיר בעיקר'];
+            return entry;
+        }
+        async function loadWeather() {
+            try {
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}` +
+                    `&current=temperature_2m,relative_humidity_2m,weather_code,is_day` +
+                    `&daily=weather_code,temperature_2m_max,temperature_2m_min` +
+                    `&timezone=Asia%2FJerusalem&forecast_days=4`;
+                const res = await fetch(url);
+                const data = await res.json();
+
+                const cur = data.current;
+                const [icon, desc] = weatherIcon(cur.weather_code, cur.is_day === 0);
+                document.getElementById('cwIcon').textContent = icon;
+                document.getElementById('cwTemp').textContent = Math.round(cur.temperature_2m) + '°';
+                document.getElementById('cwDesc').textContent = desc + ' · לחות ' + cur.relative_humidity_2m + '%';
+
+                const days = data.daily;
+                const cardsEl = document.getElementById('forecastCards');
+                cardsEl.innerHTML = '';
+                for (let i = 1; i <= 3; i++) {
+                    const d = new Date(days.time[i]);
+                    const dayName = d.toLocaleDateString('he-IL', { weekday: 'short' });
+                    const [dIcon] = weatherIcon(days.weather_code[i], false);
+                    const hi = Math.round(days.temperature_2m_max[i]);
+                    const lo = Math.round(days.temperature_2m_min[i]);
+                    cardsEl.insertAdjacentHTML('beforeend', `
+                        <div class="forecast-card">
+                            <div class="day-name">${dayName}</div>
+                            <div class="day-icon">${dIcon}</div>
+                            <div class="day-temps"><span class="low">${lo}°</span> <span class="high">${hi}°</span></div>
+                        </div>`);
+                }
+                localStorage.setItem('weatherCache', JSON.stringify({ time: Date.now() }));
+            } catch (e) {
+                console.error('Weather fetch failed', e);
+            }
+        }
+        loadWeather();
+        setInterval(loadWeather, 20 * 60 * 1000);
+
+        /* ===== מבזקי ynet - דרך פרוקסי rss2json (עוקף בעיות דומיין) ===== */
+        async function loadNews() {
+            try {
+                const proxyUrl = 'https://api.rss2json.com/v1/api.json?rss_url=' +
+                    encodeURIComponent('https://www.ynet.co.il/Integration/StoryRss2.xml');
+                const res = await fetch(proxyUrl);
+                const data = await res.json();
+                if (data.status !== 'ok' || !data.items || !data.items.length) throw new Error('bad feed');
+
+                const items = data.items.slice(0, 8);
+                renderNewsTrack(items);
+                document.getElementById('newsFooter').textContent = 'עודכן ' +
+                    new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+                localStorage.setItem('newsCache', JSON.stringify({ items, time: Date.now() }));
+            } catch (e) {
+                console.error('News fetch failed', e);
+                const cached = localStorage.getItem('newsCache');
+                if (cached) {
+                    const { items } = JSON.parse(cached);
+                    renderNewsTrack(items);
+                    document.getElementById('newsFooter').textContent = 'תצוגה שמורה (אין חיבור לרענון)';
+                } else {
+                    const track = document.getElementById('newsTrack');
+                    track.classList.remove('scrolling');
+                    track.innerHTML = '<div class="news-item"><div class="news-title">לא ניתן לטעון מבזקים כרגע</div></div>';
+                }
+            }
+        }
+
+        const NEWS_SCROLL_SPEED = 28; // פיקסלים לשנייה - מהירות הגלילה
+
+        function renderNewsTrack(items) {
+            const track = document.getElementById('newsTrack');
+            const itemsHtml = items.map(item => {
+                const time = new Date(item.pubDate).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+                return `<div class="news-item">
+                            <div class="news-time">${time}</div>
+                            <div class="news-title">${item.title}</div>
+                        </div>`;
+            }).join('');
+
+            // עצירת האנימציה הקודמת לפני מדידה מחדש
+            track.classList.remove('scrolling');
+            track.style.transform = 'translateY(0)';
+            track.innerHTML = itemsHtml;
+
+            const singleSetHeight = track.scrollHeight;
+            const viewportHeight = track.parentElement.clientHeight;
+
+            // אם התוכן קצר יותר מהאזור המוצג, אין צורך בגלילה
+            if (singleSetHeight <= viewportHeight) return;
+
+            // הכפלת התוכן פעמיים כדי לאפשר לולאה חלקה ורציפה
+            track.innerHTML = itemsHtml + itemsHtml;
+            const duration = (singleSetHeight / NEWS_SCROLL_SPEED).toFixed(1);
+            track.style.animationDuration = duration + 's';
+            // הפעלה מחדש של האנימציה מנקודת ההתחלה
+            void track.offsetHeight;
+            track.classList.add('scrolling');
+        }
+
+        loadNews();
+        setInterval(loadNews, 20 * 1000);
+
+        /* ===== הודעות ועד הבית - קרוסלה מתחלפת ===== */
+        const HOMBI_URL = 'https://hombi.co/download.html';
+        const HOMBI_SIGNUP_URL = 'https://hombi.co/signinwithcode.html?code=yVjjSn4w4';
+        const qrImg = (url) => 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=0&data=' + encodeURIComponent(url);
+
+        const notices = [
+            {
+                title: 'קריאות שירות ותקלות',
+                body: '1. סרקו את הברקוד הראשון להורדת אפליקציית Hombi.<br>2. לאחר ההורדה, סרקו את הברקוד השני להרשמה עם קוד הבניין.',
+                qrs: [
+                    { label: '1. הורדה', url: qrImg(HOMBI_URL) },
+                    { label: '2. הרשמה', url: qrImg(HOMBI_SIGNUP_URL) }
+                ]
+            },
+            {
+                title: 'שריון חדר דיירים',
+                body: 'ניתן לשריין את חדר הדיירים בבניין ישירות דרך אפליקציית Hombi.'
+            }
+        ];
+        let noticeIndex = 0;
+        const NOTICE_DURATION = 8000;
+
+        function renderNoticeDots() {
+            const dotsEl = document.getElementById('noticeDots');
+            dotsEl.innerHTML = notices.map((_, i) =>
+                `<div class="notice-dot ${i === noticeIndex ? 'active' : ''}"></div>`).join('');
+        }
+        function showNotice(i) {
+            const n = notices[i];
+            const qrsHtml = (n.qrs || []).map(q =>
+                `<div class="notice-qr"><img src="${q.url}" alt="ברקוד ${q.label}"><span>${q.label}</span></div>`
+            ).join('');
+            document.getElementById('noticeBody').innerHTML =
+                `<div class="notice-slide-inner" style="display:flex; gap:14px; align-items:center; flex:1;">
+                    <div style="flex:1;"><h3>${n.title}</h3><p>${n.body}</p></div>
+                    ${qrsHtml}
+                </div>`;
+            document.getElementById('noticeCounter').textContent = `${i + 1} / ${notices.length}`;
+            renderNoticeDots();
+
+            const fill = document.getElementById('noticeBarFill');
+            fill.style.transition = 'none';
+            fill.style.height = '0%';
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    fill.style.transition = `height ${NOTICE_DURATION}ms linear`;
+                    fill.style.height = '100%';
+                });
+            });
+        }
+        function nextNotice() {
+            noticeIndex = (noticeIndex + 1) % notices.length;
+            showNotice(noticeIndex);
+        }
+        showNotice(0);
+        if (notices.length > 1) setInterval(nextNotice, NOTICE_DURATION);
+    </script>
+</body>
+</html>
