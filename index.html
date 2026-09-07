@@ -22,7 +22,7 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { height: 100%; }
+        html, body { height: 100%; overflow: hidden; }
 
         body {
             font-family: 'Rubik', 'Segoe UI', Tahoma, sans-serif;
@@ -31,9 +31,13 @@
                 radial-gradient(ellipse 700px 500px at 10% 110%, rgba(79, 168, 160, 0.07), transparent),
                 var(--bg);
             color: var(--ink);
-            min-height: 100vh;
+            height: 100vh;
+        }
+        .scale-wrapper {
             display: flex;
             flex-direction: column;
+            height: 100%;
+            transform-origin: top center;
         }
 
         /* שורת כותרת עליונה */
@@ -223,18 +227,18 @@
             padding: 18px 22px;
             border: 1px solid var(--hairline);
             border-right: 4px solid var(--sage);
-            flex: 1;
             display: flex;
             flex-direction: column;
             min-height: 140px;
+            max-height: 240px;
         }
         .notice-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 10px;
         }
         .notice-title { font-family: 'Frank Ruhl Libre', serif; color: var(--sage); font-size: 1.15rem; font-weight: 700; }
-        .notice-counter { color: var(--stone); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
-        .notice-slide { flex: 1; display: flex; gap: 12px; align-items: flex-start; }
+        .notice-counter { color: var(--stone); font-size: 0.85rem; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: embed; }
+        .notice-slide { display: flex; gap: 12px; align-items: flex-start; }
         .notice-bar { width: 4px; border-radius: 2px; background: rgba(79, 168, 160, 0.25); flex-shrink: 0; align-self: stretch; overflow: hidden; position: relative; }
         .notice-bar-fill { position: absolute; top: 0; right: 0; left: 0; height: 0%; background: var(--sage); }
         .notice-body { flex: 1; min-width: 0; }
@@ -250,6 +254,7 @@
     <!-- מוזיקת רקע נעימה - פסנתר, לולאה עדינה -->
     <audio id="bgMusic" src="https://archive.org/download/32LifeAmbient/31%20Positive%20Piano.mp3" loop preload="auto"></audio>
 
+    <div class="scale-wrapper" id="scaleWrapper">
     <div class="header-bar">
         <div class="header-right">רחוב הברוש <span class="building-no">7</span>, באר יעקב</div>
         <div class="header-left">
@@ -323,6 +328,7 @@
             </div>
 
         </div>
+    </div>
     </div>
 
     <script>
@@ -513,12 +519,8 @@
             track.innerHTML = itemsHtml;
 
             const singleSetHeight = track.scrollHeight;
-            const viewportHeight = track.parentElement.clientHeight;
 
-            // אם התוכן קצר יותר מהאזור המוצג, אין צורך בגלילה
-            if (singleSetHeight <= viewportHeight) return;
-
-            // הכפלת התוכן פעמיים כדי לאפשר לולאה חלקה ורציפה
+            // הכפלת התוכן פעמיים כדי לאפשר לולאה חלקה ורציפה - תמיד גוללים, גם אם התוכן כבר נכנס
             track.innerHTML = itemsHtml + itemsHtml;
             const duration = (singleSetHeight / NEWS_SCROLL_SPEED).toFixed(1);
             track.style.animationDuration = duration + 's';
@@ -571,6 +573,31 @@
         }
         showNotice(0);
         if (notices.length > 1) setInterval(nextNotice, NOTICE_DURATION);
+    </script>
+
+    <script>
+        /* ===== התאמה אוטומטית לגודל המסך - מגדילה את התצוגה על מסכים גדולים ===== */
+        const REFERENCE_WIDTH = 1200; // רוחב שעליו תוכנן העיצוב במקור
+
+        function fitToScreen() {
+            const wrapper = document.getElementById('scaleWrapper');
+            const ratio = Math.min(2.2, Math.max(1, window.innerWidth / REFERENCE_WIDTH));
+
+            if (ratio > 1.02) {
+                wrapper.style.transform = 'scale(' + ratio + ')';
+                wrapper.style.width = (100 / ratio) + '%';
+                wrapper.style.marginLeft = 'auto';
+                wrapper.style.marginRight = 'auto';
+            } else {
+                wrapper.style.transform = 'none';
+                wrapper.style.width = '100%';
+                wrapper.style.marginLeft = '';
+                wrapper.style.marginRight = '';
+            }
+        }
+        window.addEventListener('load', fitToScreen);
+        window.addEventListener('resize', fitToScreen);
+        setTimeout(fitToScreen, 800);
     </script>
 </body>
 </html>
