@@ -155,7 +155,14 @@
             flex-direction: column;
             padding: 22px 26px;
             gap: 16px;
+        }
+        .content-rows {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            gap: 16px;
             justify-content: space-between;
+            min-height: 0;
         }
 
         .top-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
@@ -253,7 +260,7 @@
 
     <!-- מוזיקת רקע נעימה - פסנתר, לולאה עדינה -->
     <audio id="bgMusic" src="https://archive.org/download/32LifeAmbient/31%20Positive%20Piano.mp3" loop preload="auto"></audio>
-
+    
     <div class="scale-wrapper" id="scaleWrapper">
     <div class="header-bar">
         <div class="header-right">רחוב הברוש <span class="building-no">7</span>, באר יעקב</div>
@@ -279,6 +286,7 @@
         </div>
 
         <div class="right-column">
+            <div class="content-rows">
 
             <div class="top-row">
                 <div class="shabbat-section">
@@ -326,6 +334,10 @@
                 </div>
                 <div class="notice-dots" id="noticeDots"></div>
             </div>
+
+            </div>
+
+            <div style="text-align:center; font-size:1rem; color:var(--stone); opacity:0.75; flex-shrink:0; margin-top:4px;">נוצר על ידי איתי פלד</div>
 
         </div>
     </div>
@@ -586,11 +598,13 @@
             if (ratio > 1.02) {
                 wrapper.style.transform = 'scale(' + ratio + ')';
                 wrapper.style.width = (100 / ratio) + '%';
+                wrapper.style.height = (100 / ratio) + '%';
                 wrapper.style.marginLeft = 'auto';
                 wrapper.style.marginRight = 'auto';
             } else {
                 wrapper.style.transform = 'none';
                 wrapper.style.width = '100%';
+                wrapper.style.height = '100%';
                 wrapper.style.marginLeft = '';
                 wrapper.style.marginRight = '';
             }
