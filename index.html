@@ -102,6 +102,7 @@
             border-bottom: 1px solid var(--hairline);
             min-height: 320px;
         }
+        @media (min-width: 769px) { .left-column { border-bottom: none; } }
         .news-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
         .news-header .pulse {
             width: 8px; height: 8px; border-radius: 50%;
@@ -147,7 +148,7 @@
         .news-item + .news-item { margin-top: 8px; }
         .news-item .news-time { color: var(--brass-deep); font-size: 0.8rem; margin-bottom: 4px; font-variant-numeric: tabular-nums; font-weight: 600; }
         .news-item .news-title { font-size: 0.98rem; line-height: 1.55; color: var(--ink); }
-        .news-footer { padding-top: 10px; color: var(--stone); font-size: 0.75rem; text-align: center; }
+        .news-footer { padding-top: 10px; color: var(--stone); font-size: 1rem; line-height: 1.4; text-align: center; }
 
         /* טור ימין */
         .right-column {
@@ -161,8 +162,17 @@
             flex-direction: column;
             flex: 1;
             gap: 16px;
-            justify-content: space-between;
+            justify-content: space-evenly;
             min-height: 0;
+        }
+        .credit-line {
+            padding-top: 10px;
+            text-align: center;
+            font-size: 1rem;
+            line-height: 1.4;
+            color: var(--stone);
+            opacity: 0.75;
+            flex-shrink: 0;
         }
 
         .top-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
@@ -200,14 +210,14 @@
             background-color: var(--panel);
             border: 1px solid var(--hairline);
             border-radius: 10px;
-            padding: 10px 8px;
+            padding: 14px 10px;
             text-align: center;
             flex: 1;
             min-width: 70px;
         }
-        .forecast-card .day-name { font-size: 0.82rem; color: var(--stone); margin-bottom: 4px; }
-        .forecast-card .day-icon { font-size: 1.3rem; margin-bottom: 4px; }
-        .forecast-card .day-temps { font-size: 0.88rem; font-variant-numeric: tabular-nums; }
+        .forecast-card .day-name { font-size: 1.1rem; color: var(--stone); margin-bottom: 6px; }
+        .forecast-card .day-icon { font-size: 2rem; margin-bottom: 6px; }
+        .forecast-card .day-temps { font-size: 1.2rem; font-variant-numeric: tabular-nums; }
         .forecast-card .day-temps .low { color: var(--stone); }
         .forecast-card .day-temps .high { color: var(--brass-deep); font-weight: 700; }
 
@@ -215,51 +225,52 @@
             background-color: var(--panel);
             border: 1px solid var(--hairline);
             border-radius: 10px;
-            padding: 10px 18px;
+            padding: 14px 22px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            min-width: 180px;
+            gap: 14px;
+            min-width: 240px;
         }
-        .current-weather .cw-icon { font-size: 2rem; }
+        .current-weather .cw-icon { font-size: 2.8rem; }
         .current-weather .cw-info { text-align: right; }
-        .current-weather .cw-temp { font-size: 1.5rem; font-weight: 700; color: var(--brass-deep); }
-        .current-weather .cw-desc { font-size: 0.85rem; color: var(--stone); }
-        .current-weather .cw-loc { font-size: 0.8rem; color: var(--stone); }
+        .current-weather .cw-temp { font-size: 2.1rem; font-weight: 700; color: var(--brass-deep); }
+        .current-weather .cw-desc { font-size: 1.1rem; color: var(--stone); }
+        .current-weather .cw-loc { font-size: 1.05rem; color: var(--stone); }
 
         /* הודעות ועד הבית - קרוסלה */
         .bottom-row {
             background-color: var(--panel);
             border-radius: 10px;
-            padding: 18px 22px;
+            padding: 22px 28px;
             border: 1px solid var(--hairline);
             border-right: 4px solid var(--sage);
             display: flex;
             flex-direction: column;
-            min-height: 140px;
-            max-height: 240px;
+            min-height: 190px;
+            max-height: 300px;
         }
         .notice-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 10px;
         }
-        .notice-title { font-family: 'Frank Ruhl Libre', serif; color: var(--sage); font-size: 1.15rem; font-weight: 700; }
-        .notice-counter { color: var(--stone); font-size: 0.85rem; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: embed; }
+        .notice-title { font-family: 'Frank Ruhl Libre', serif; color: var(--sage); font-size: 1.4rem; font-weight: 700; }
+        .notice-counter { color: var(--stone); font-size: 1rem; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: embed; }
         .notice-slide { display: flex; gap: 12px; align-items: flex-start; }
         .notice-bar { width: 4px; border-radius: 2px; background: rgba(79, 168, 160, 0.25); flex-shrink: 0; align-self: stretch; overflow: hidden; position: relative; }
         .notice-bar-fill { position: absolute; top: 0; right: 0; left: 0; height: 0%; background: var(--sage); }
         .notice-body { flex: 1; min-width: 0; }
-        .notice-body h3 { font-size: 1.05rem; margin-bottom: 6px; color: var(--ink); }
-        .notice-body p { font-size: 0.98rem; line-height: 1.6; color: var(--stone); }
-        .notice-dots { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
-        .notice-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--hairline); }
+        .notice-body h3 { font-size: 1.4rem; margin-bottom: 8px; color: var(--ink); }
+        .notice-body p { font-size: 1.2rem; line-height: 1.6; color: var(--stone); }
+        .notice-dots { display: flex; gap: 8px; justify-content: center; margin-top: 14px; }
+        .notice-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--hairline); }
         .notice-dot.active { background: var(--sage); }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
 </head>
 <body>
 
-    <!-- מוזיקת רקע נעימה - פסנתר, לולאה עדינה -->
-    <audio id="bgMusic" src="https://archive.org/download/32LifeAmbient/31%20Positive%20Piano.mp3" loop preload="auto"></audio>
+    <!-- מוזיקת רקע - רדיו חי 100FM Cafe -->
+    <audio id="bgMusic" preload="none"></audio>
     
     <div class="scale-wrapper" id="scaleWrapper">
     <div class="header-bar">
@@ -321,23 +332,23 @@
             </div>
 
             <div class="bottom-row">
-                <div class="notice-header">
-                    <span class="notice-title">📢 הודעות ועד הבית</span>
-                    <span class="notice-counter" id="noticeCounter">1 / 1</span>
-                </div>
-                <div class="notice-slide">
-                    <div class="notice-bar"><div class="notice-bar-fill" id="noticeBarFill"></div></div>
-                    <div class="notice-body" id="noticeBody">
-                        <h3></h3>
-                        <p>טוען הודעות...</p>
+                    <div class="notice-header">
+                        <span class="notice-title">📢 הודעות ועד הבית</span>
+                        <span class="notice-counter" id="noticeCounter">1 / 1</span>
                     </div>
+                    <div class="notice-slide">
+                        <div class="notice-bar"><div class="notice-bar-fill" id="noticeBarFill"></div></div>
+                        <div class="notice-body" id="noticeBody">
+                            <h3></h3>
+                            <p>טוען הודעות...</p>
+                        </div>
+                    </div>
+                    <div class="notice-dots" id="noticeDots"></div>
                 </div>
-                <div class="notice-dots" id="noticeDots"></div>
-            </div>
 
             </div>
 
-            <div style="text-align:center; font-size:1rem; color:var(--stone); opacity:0.75; flex-shrink:0; margin-top:4px;">נוצר על ידי איתי פלד</div>
+            <div id="creditLine" class="credit-line">נוצר על ידי איתי פלד</div>
 
         </div>
     </div>
@@ -415,19 +426,39 @@
         loadShabbatTimes();
         setInterval(loadShabbatTimes, 6 * 60 * 60 * 1000);
 
-        /* ===== מוזיקת רקע - השמעה אוטומטית בעוצמה נעימה ===== */
-        (function initBackgroundMusic() {
+        /* ===== מוזיקת רקע - רדיו חי (100FM Cafe, HLS) ===== */
+        (function initRadio() {
             const audio = document.getElementById('bgMusic');
+            const STREAM_URL = 'https://gb25.streamgates.net/radios-audio/100Cafe/chunks.m3u8?nimblesessionid=610469171';
             audio.volume = 0.55;
-            const tryPlay = () => {
+
+            function tryPlay() {
                 audio.play().catch(() => {
                     // הדפדפן חסם השמעה אוטומטית - ננסה שוב בקליק/מגע ראשון
                     const resume = () => { audio.play(); document.removeEventListener('click', resume); document.removeEventListener('touchstart', resume); };
                     document.addEventListener('click', resume, { once: true });
                     document.addEventListener('touchstart', resume, { once: true });
                 });
-            };
-            tryPlay();
+            }
+
+            if (window.Hls && Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(STREAM_URL);
+                hls.attachMedia(audio);
+                hls.on(Hls.Events.MANIFEST_PARSED, tryPlay);
+                hls.on(Hls.Events.ERROR, function (event, data) {
+                    if (data.fatal) {
+                        console.error('HLS fatal error, retrying...', data);
+                        setTimeout(() => hls.loadSource(STREAM_URL), 5000);
+                    }
+                });
+            } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
+                // תמיכה טבעית (Safari / iOS)
+                audio.src = STREAM_URL;
+                audio.addEventListener('loadedmetadata', tryPlay);
+            } else {
+                console.error('הדפדפן לא תומך בשידור HLS');
+            }
         })();
 
         /* ===== מזג אוויר - Open-Meteo (חינמי, ללא מפתח) ===== */
@@ -588,14 +619,13 @@
     </script>
 
     <script>
-        /* ===== התאמה אוטומטית לגודל המסך - מגדילה את התצוגה על מסכים גדולים ===== */
+        /* ===== התאמה אוטומטית לגודל המסך האמיתי (24 אינץ' עכשיו, 50 אינץ' בהמשך) ===== */
         const REFERENCE_WIDTH = 1200; // רוחב שעליו תוכנן העיצוב במקור
+        const MAX_RATIO = 4;          // תקרת הגדלה (מסך 4K)
+        const MIN_RATIO = 0.6;        // רצפת הקטנה (מסך נמוך מאוד)
 
-        function fitToScreen() {
-            const wrapper = document.getElementById('scaleWrapper');
-            const ratio = Math.min(2.2, Math.max(1, window.innerWidth / REFERENCE_WIDTH));
-
-            if (ratio > 1.02) {
+        function applyScale(wrapper, ratio) {
+            if (Math.abs(ratio - 1) > 0.02) {
                 wrapper.style.transform = 'scale(' + ratio + ')';
                 wrapper.style.width = (100 / ratio) + '%';
                 wrapper.style.height = (100 / ratio) + '%';
@@ -609,9 +639,31 @@
                 wrapper.style.marginRight = '';
             }
         }
+
+        function fitToScreen() {
+            const wrapper = document.getElementById('scaleWrapper');
+            const rows = wrapper.querySelector('.content-rows');
+
+            // מסך צר (טלפון) - פריסה אנכית רגילה, בלי הגדלה
+            if (window.innerWidth < 769) { applyScale(wrapper, 1); return; }
+
+            // התחלה: הגדלה לפי רוחב המסך האמיתי
+            let ratio = Math.min(MAX_RATIO, Math.max(MIN_RATIO, window.innerWidth / REFERENCE_WIDTH));
+            applyScale(wrapper, ratio);
+
+            // התאמה לגובה: אם התוכן גבוה מהמסך (מסך רחב ונמוך) - מקטינים עד שהכל נכנס
+            // (כל הרווחים בין האזורים נשארים לפחות כמו שהוגדר ב-CSS)
+            for (let i = 0; i < 12; i++) {
+                const have = rows.clientHeight, need = rows.scrollHeight;
+                if (need <= have + 1 || ratio <= MIN_RATIO) break;
+                ratio = Math.max(MIN_RATIO, ratio * (have / need) * 0.995);
+                applyScale(wrapper, ratio);
+            }
+        }
         window.addEventListener('load', fitToScreen);
         window.addEventListener('resize', fitToScreen);
         setTimeout(fitToScreen, 800);
+        setInterval(fitToScreen, 5000); // תיקון אוטומטי כשהתוכן משתנה (תחזית שנטענה, הודעה אחרת)
     </script>
 </body>
 </html>
