@@ -9,29 +9,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Rubik:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0a1128;
-            --panel: #111a33;
-            --panel-2: #0e1730;
-            --hairline: #223255;
-            --ink: #eef1f8;
-            --stone: #8b98b8;
-            --brass: #e3a857;
-            --brass-deep: #f0c98a;
-            --sage: #4fa8a0;
-            --rust: #d8483a;
+            --bg: #ece6da;
+            --panel: #ffffff;
+            --panel-2: #f7f1e6;
+            --hairline: #dcd3c0;
+            --ink: #2b2620;
+            --stone: #766b5d;
+            --brass: #a8763a;
+            --brass-deep: #8a5e28;
+            --sage: #4c6b45;
+            --rust: #a14a2e;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { height: 100%; overflow: hidden; }
+        html, body { height: 100%; }
 
         body {
             font-family: 'Rubik', 'Segoe UI', Tahoma, sans-serif;
-            background:
-                radial-gradient(ellipse 900px 500px at 85% -10%, rgba(227, 168, 87, 0.08), transparent),
-                radial-gradient(ellipse 700px 500px at 10% 110%, rgba(79, 168, 160, 0.07), transparent),
-                var(--bg);
+            background: var(--bg);
             color: var(--ink);
             height: 100vh;
+            overflow: hidden;
         }
         .scale-wrapper {
             display: flex;
@@ -42,7 +40,7 @@
 
         /* שורת כותרת עליונה */
         .header-bar {
-            background-color: var(--panel-2);
+            background-color: var(--panel);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -50,7 +48,7 @@
             font-size: 1rem;
             border-bottom: 1px solid var(--hairline);
             border-top: 3px solid var(--brass);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 2px 6px rgba(43, 38, 32, 0.06);
             flex-wrap: wrap;
             gap: 10px;
             position: relative;
@@ -74,7 +72,6 @@
         .status-dot {
             width: 7px; height: 7px; border-radius: 50%;
             background: var(--sage);
-            box-shadow: 0 0 8px var(--sage);
             display: inline-block;
         }
 
@@ -86,7 +83,7 @@
             .left-column {
                 width: 33%;
                 border-left: 1px solid var(--hairline);
-                box-shadow: 6px 0 14px -10px rgba(0, 0, 0, 0.4);
+                box-shadow: 6px 0 14px -10px rgba(43, 38, 32, 0.25);
                 border-bottom: none;
                 height: 100%;
             }
@@ -111,9 +108,9 @@
             flex-shrink: 0;
         }
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(216, 72, 58, 0.5); }
-            70% { box-shadow: 0 0 0 9px rgba(216, 72, 58, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(216, 72, 58, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(161, 74, 46, 0.45); }
+            70% { box-shadow: 0 0 0 9px rgba(161, 74, 46, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(161, 74, 46, 0); }
         }
         .news-header .label { font-family: 'Frank Ruhl Libre', serif; font-weight: 700; font-size: 1.08rem; color: var(--ink); }
 
@@ -187,11 +184,12 @@
         .date { font-size: 1.02rem; color: var(--stone); }
 
         .shabbat-section {
-            background: linear-gradient(160deg, rgba(227, 168, 87, 0.16), rgba(227, 168, 87, 0.04));
+            background: var(--panel);
             padding: 14px 20px;
             border-radius: 10px;
             border: 1px solid var(--hairline);
             border-right: 4px solid var(--brass);
+            box-shadow: 0 2px 8px rgba(43, 38, 32, 0.06);
             min-width: 156px;
         }
         .shabbat-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
@@ -210,6 +208,7 @@
             background-color: var(--panel);
             border: 1px solid var(--hairline);
             border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(43, 38, 32, 0.06);
             padding: 14px 10px;
             text-align: center;
             flex: 1;
@@ -225,6 +224,7 @@
             background-color: var(--panel);
             border: 1px solid var(--hairline);
             border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(43, 38, 32, 0.06);
             padding: 14px 22px;
             display: flex;
             align-items: center;
@@ -244,6 +244,7 @@
             padding: 22px 28px;
             border: 1px solid var(--hairline);
             border-right: 4px solid var(--sage);
+            box-shadow: 0 2px 8px rgba(43, 38, 32, 0.06);
             display: flex;
             flex-direction: column;
             min-height: 190px;
@@ -256,7 +257,7 @@
         .notice-title { font-family: 'Frank Ruhl Libre', serif; color: var(--sage); font-size: 1.4rem; font-weight: 700; }
         .notice-counter { color: var(--stone); font-size: 1rem; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: embed; }
         .notice-slide { display: flex; gap: 12px; align-items: flex-start; }
-        .notice-bar { width: 4px; border-radius: 2px; background: rgba(79, 168, 160, 0.25); flex-shrink: 0; align-self: stretch; overflow: hidden; position: relative; }
+        .notice-bar { width: 4px; border-radius: 2px; background: rgba(76, 107, 69, 0.18); flex-shrink: 0; align-self: stretch; overflow: hidden; position: relative; }
         .notice-bar-fill { position: absolute; top: 0; right: 0; left: 0; height: 0%; background: var(--sage); }
         .notice-body { flex: 1; min-width: 0; }
         .notice-body h3 { font-size: 1.4rem; margin-bottom: 8px; color: var(--ink); }
