@@ -516,33 +516,135 @@
         loadWeather();
         setInterval(loadWeather, 20 * 60 * 1000);
 
-        /* ===== מבזקי ynet - דרך פרוקסי rss2json (עוקף בעיות דומיין) ===== */
-        async function loadNews() {
-            try {
-                const proxyUrl = 'https://api.rss2json.com/v1/api.json?rss_url=' +
-                    encodeURIComponent('https://www.ynet.co.il/Integration/StoryRss2.xml');
-                const res = await fetch(proxyUrl);
-                const data = await res.json();
-                if (data.status !== 'ok' || !data.items || !data.items.length) throw new Error('bad feed');
+        /* ===== מבזקי ynet - עם מקורות גיבוי. כל מקור מוגבל בזמן ולא יכול לתקוע את התצוגה ===== */
+        const NEWS_FEED_URL = 'https://www.ynet.co.il/Integration/StoryRss1854.xml'; // הערוץ "ynet - מבזקים"
+        // אופציונלי: כתובת ה-Worker האישי ב-Cloudflare (ראה news-proxy-worker.js). אם מלא - הוא המקור הראשון והיציב ביותר.
+        const NEWS_WORKER_URL = 'https://ynet-news.itaipled.workers.dev/';
+        const NEWS_REFRESH_MS = 5 * 60 * 1000;  // רענון כל 5 דקות
+        const NEWS_TIMEOUT_MS = 8000;           // מקסימום המתנה לכל מקור
+        const NEWS_DEBUG = /[?&]debug\b/.test(location.search); // הוספת ?debug לכתובת מציגה בתחתית למה מקור נכשל
 
-                const items = data.items.slice(0, 8);
-                renderNewsTrack(items);
-                document.getElementById('newsFooter').textContent = 'עודכן ' +
-                    new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
-                localStorage.setItem('newsCache', JSON.stringify({ items, time: Date.now() }));
-            } catch (e) {
-                console.error('News fetch failed', e);
-                const cached = localStorage.getItem('newsCache');
-                if (cached) {
-                    const { items } = JSON.parse(cached);
-                    renderNewsTrack(items);
-                    document.getElementById('newsFooter').textContent = 'תצוגה שמורה (אין חיבור לרענון)';
-                } else {
-                    const track = document.getElementById('newsTrack');
-                    track.classList.remove('scrolling');
-                    track.innerHTML = '<div class="news-item"><div class="news-title">לא ניתן לטעון מבזקים כרגע</div></div>';
-                }
+        function withTimeout(promise, ms) {
+            return new Promise((resolve, reject) => {
+                const t = setTimeout(() => reject(new Error('timeout')), ms);
+                promise.then(v => { clearTimeout(t); resolve(v); }, e => { clearTimeout(t); reject(e); });
+            });
+        }
+        // מחזיר את התוצאה של המקור הראשון שהצליח; נכשל רק אם כולם נכשלו (עובד גם בדפדפנים ישנים, בניגוד ל-Promise.any)
+        function firstSuccess(promises) {
+            return new Promise((resolve, reject) => {
+                let failed = 0;
+                promises.forEach(p => p.then(resolve, () => { if (++failed === promises.length) reject(new Error('all failed')); }));
+            });
+        }
+        function escapeHtml(s) {
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // מקור 0: Worker אישי (אם הוגדר) - מחזיר JSON מוכן
+        async function fetchViaWorker() {
+            const res = await fetch(NEWS_WORKER_URL);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+            if (!data.items || !data.items.length) throw new Error('no items');
+            return data.items;
+        }
+        // מקור 1: rss2json (מחזיר JSON מוכן)
+        async function fetchViaRss2Json() {
+            const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(NEWS_FEED_URL));
+            let data = null;
+            try { data = await res.json(); } catch (e) { /* לא JSON */ }
+            if (!res.ok || !data || data.status !== 'ok' || !data.items || !data.items.length)
+                throw new Error('HTTP ' + res.status + (data && data.message ? ' ' + String(data.message).slice(0, 30) : ''));
+            return data.items.map(i => ({ title: i.title, pubDate: i.pubDate }));
+        }
+        // מקורות גיבוי: מורידים את ה-XML דרך פרוקסי ציבורי ומפרשים אותו בעצמנו
+        function parseRssXml(text) {
+            const doc = new DOMParser().parseFromString(text, 'text/xml');
+            if (doc.querySelector('parsererror')) throw new Error('XML parse error');
+            const items = [...doc.querySelectorAll('item')].map(it => ({
+                title: (it.querySelector('title') || {}).textContent || '',
+                pubDate: (it.querySelector('pubDate') || {}).textContent || ''
+            })).filter(i => i.title);
+            if (!items.length) throw new Error('XML: no items');
+            return items;
+        }
+        async function fetchViaProxy(proxyUrl) {
+            const res = await fetch(proxyUrl);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return parseRssXml(await res.text());
+        }
+        // [שם, פונקציה, השהיה לפני ההתחלה] - כל גיבוי מתחיל רק אם הקודמים עדיין לא ענו
+        const NEWS_SOURCES = [];
+        (function () {
+            let d = 0;
+            if (NEWS_WORKER_URL) { NEWS_SOURCES.push(['worker', fetchViaWorker, d]); d += 3000; }
+            NEWS_SOURCES.push(['rss2json', fetchViaRss2Json, d]); d += 3000;
+            NEWS_SOURCES.push(['allorigins', () => fetchViaProxy('https://api.allorigins.win/raw?url=' + encodeURIComponent(NEWS_FEED_URL)), d]); d += 3000;
+            NEWS_SOURCES.push(['codetabs', () => fetchViaProxy('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(NEWS_FEED_URL)), d]);
+        })();
+
+        function hhmm(t) { return new Date(t).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }); }
+        function readNewsCache() {
+            try { const c = JSON.parse(localStorage.getItem('newsCache') || 'null'); return (c && c.items && c.items.length) ? c : null; }
+            catch (e) { return null; }
+        }
+        function setNewsFooter(text, detail) {
+            const f = document.getElementById('newsFooter');
+            f.textContent = text;
+            if (detail && NEWS_DEBUG) {
+                const d = document.createElement('div');
+                d.style.cssText = 'font-size:0.7em; opacity:0.85; direction:ltr; margin-top:2px;';
+                d.textContent = detail;
+                f.appendChild(d);
             }
+        }
+
+        async function loadNews() {
+            let finished = false;
+            const errors = {};
+            const attempts = NEWS_SOURCES.map(([name, fn, delayMs]) =>
+                new Promise(r => setTimeout(r, delayMs)).then(() => {
+                    if (finished) throw new Error('skipped');
+                    return withTimeout(fn(), NEWS_TIMEOUT_MS);
+                }).catch(e => {
+                    if (e.message !== 'skipped') { errors[name] = e.message; console.warn('News source failed (' + name + '):', e.message); }
+                    throw e;
+                })
+            );
+
+            let items = null;
+            try { items = await firstSuccess(attempts); } catch (e) { /* כולם נכשלו */ }
+            finished = true;
+
+            if (items) {
+                items = items.slice(0, 8);
+                renderNewsTrack(items);
+                setNewsFooter('עודכן ' + hhmm(Date.now()));
+                try { localStorage.setItem('newsCache', JSON.stringify({ items, time: Date.now() })); } catch (e) {}
+                return;
+            }
+
+            // כל המקורות נכשלו - מציגים את מה ששמור, ורושמים מתי הוא נשמר
+            const detail = Object.keys(errors).map(k => k + ': ' + errors[k]).join(' | ');
+            const cached = readNewsCache();
+            if (cached) {
+                renderNewsTrack(cached.items);
+                setNewsFooter('לא מתעדכן - נשמר ב-' + hhmm(cached.time), detail);
+            } else {
+                setNewsFooter('', detail);
+                const track = document.getElementById('newsTrack');
+                track.classList.remove('scrolling');
+                track.innerHTML = '<div class="news-item"><div class="news-title">לא ניתן לטעון מבזקים כרגע</div></div>';
+            }
+        }
+
+        // מציג מיד את העותק השמור (אם יש), כך שהמסך לא נשאר על "טוען..." בזמן שמחכים לרשת
+        function showCachedNewsNow() {
+            const cached = readNewsCache();
+            if (!cached) return;
+            renderNewsTrack(cached.items);
+            setNewsFooter('מעדכן... (מוצג מה-' + hhmm(cached.time) + ')');
         }
 
         const NEWS_SCROLL_SPEED = 28; // פיקסלים לשנייה - מהירות הגלילה
@@ -553,7 +655,7 @@
                 const time = new Date(item.pubDate).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
                 return `<div class="news-item">
                             <div class="news-time">${time}</div>
-                            <div class="news-title">${item.title}</div>
+                            <div class="news-title">${escapeHtml(item.title)}</div>
                         </div>`;
             }).join('');
 
@@ -573,8 +675,9 @@
             track.classList.add('scrolling');
         }
 
+        showCachedNewsNow();
         loadNews();
-        setInterval(loadNews, 20 * 1000);
+        setInterval(loadNews, NEWS_REFRESH_MS);
 
         /* ===== הודעות ועד הבית - קרוסלה מתחלפת ===== */
         const notices = [
