@@ -9,27 +9,29 @@
     <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Rubik:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #ece6da;
-            --panel: #ffffff;
-            --panel-2: #f7f1e6;
-            --hairline: #dcd3c0;
-            --ink: #2b2620;
-            --stone: #766b5d;
-            --brass: #a8763a;
-            --brass-deep: #8a5e28;
-            --sage: #4c6b45;
-            --rust: #a14a2e;
+            --bg: #0a1128;
+            --panel: #111a33;
+            --panel-2: #0e1730;
+            --hairline: #223255;
+            --ink: #eef1f8;
+            --stone: #8b98b8;
+            --brass: #e3a857;
+            --brass-deep: #f0c98a;
+            --sage: #4fa8a0;
+            --rust: #d8483a;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { height: 100%; }
+        html, body { height: 100%; overflow: hidden; }
 
         body {
             font-family: 'Rubik', 'Segoe UI', Tahoma, sans-serif;
-            background: var(--bg);
+            background:
+                radial-gradient(ellipse 900px 500px at 85% -10%, rgba(227, 168, 87, 0.08), transparent),
+                radial-gradient(ellipse 700px 500px at 10% 110%, rgba(79, 168, 160, 0.07), transparent),
+                var(--bg);
             color: var(--ink);
             height: 100vh;
-            overflow: hidden;
         }
         .scale-wrapper {
             display: flex;
@@ -40,7 +42,7 @@
 
         /* שורת כותרת עליונה */
         .header-bar {
-            background-color: var(--panel);
+            background-color: var(--panel-2);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -48,7 +50,7 @@
             font-size: 1rem;
             border-bottom: 1px solid var(--hairline);
             border-top: 3px solid var(--brass);
-            box-shadow: 0 2px 6px rgba(43, 38, 32, 0.06);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
             flex-wrap: wrap;
             gap: 10px;
             position: relative;
@@ -72,6 +74,7 @@
         .status-dot {
             width: 7px; height: 7px; border-radius: 50%;
             background: var(--sage);
+            box-shadow: 0 0 8px var(--sage);
             display: inline-block;
         }
 
@@ -83,7 +86,7 @@
             .left-column {
                 width: 33%;
                 border-left: 1px solid var(--hairline);
-                box-shadow: 6px 0 14px -10px rgba(43, 38, 32, 0.25);
+                box-shadow: 6px 0 14px -10px rgba(0, 0, 0, 0.4);
                 border-bottom: none;
                 height: 100%;
             }
@@ -104,13 +107,14 @@
         .news-header .pulse {
             width: 8px; height: 8px; border-radius: 50%;
             background: var(--rust);
-            animation: pulse 2s infinite;
+            position: relative;
             flex-shrink: 0;
         }
+        .news-header .pulse::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 50%; background: rgba(216, 72, 58, 0.5); animation: pulse 2s infinite; }
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(161, 74, 46, 0.45); }
-            70% { box-shadow: 0 0 0 9px rgba(161, 74, 46, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(161, 74, 46, 0); }
+            0% { transform: scale(1); opacity: 1; }
+            70% { transform: scale(3.25); opacity: 0; }
+            100% { transform: scale(1); opacity: 0; }
         }
         .news-header .label { font-family: 'Frank Ruhl Libre', serif; font-weight: 700; font-size: 1.08rem; color: var(--ink); }
 
@@ -118,9 +122,13 @@
             flex: 1;
             overflow: hidden;
             position: relative;
-            mask-image: linear-gradient(to bottom, transparent 0, black 24px, black calc(100% - 24px), transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 24px, black calc(100% - 24px), transparent 100%);
         }
+        /* פייד עליון/תחתון של הרשימה - שכבות גרדיאנט פשוטות במקום mask-image (שמכביד מאוד על טלוויזיות חלשות) */
+        .news-list-viewport::before, .news-list-viewport::after {
+            content: ''; position: absolute; left: 0; right: 0; height: 26px; z-index: 2; pointer-events: none;
+        }
+        .news-list-viewport::before { top: -1px; background: linear-gradient(to bottom, var(--panel-2), transparent); }
+        .news-list-viewport::after { bottom: -1px; background: linear-gradient(to top, var(--panel-2), transparent); }
         .news-track {
             display: flex;
             flex-direction: column;
@@ -184,12 +192,11 @@
         .date { font-size: 1.02rem; color: var(--stone); }
 
         .shabbat-section {
-            background: var(--panel);
+            background: linear-gradient(160deg, rgba(227, 168, 87, 0.16), rgba(227, 168, 87, 0.04));
             padding: 14px 20px;
             border-radius: 10px;
             border: 1px solid var(--hairline);
             border-right: 4px solid var(--brass);
-            box-shadow: 0 2px 8px rgba(43, 38, 32, 0.06);
             min-width: 156px;
         }
         .shabbat-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
@@ -208,7 +215,6 @@
             background-color: var(--panel);
             border: 1px solid var(--hairline);
             border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(43, 38, 32, 0.06);
             padding: 14px 10px;
             text-align: center;
             flex: 1;
@@ -224,7 +230,6 @@
             background-color: var(--panel);
             border: 1px solid var(--hairline);
             border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(43, 38, 32, 0.06);
             padding: 14px 22px;
             display: flex;
             align-items: center;
@@ -244,7 +249,6 @@
             padding: 22px 28px;
             border: 1px solid var(--hairline);
             border-right: 4px solid var(--sage);
-            box-shadow: 0 2px 8px rgba(43, 38, 32, 0.06);
             display: flex;
             flex-direction: column;
             min-height: 190px;
@@ -257,8 +261,8 @@
         .notice-title { font-family: 'Frank Ruhl Libre', serif; color: var(--sage); font-size: 1.4rem; font-weight: 700; }
         .notice-counter { color: var(--stone); font-size: 1rem; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: embed; }
         .notice-slide { display: flex; gap: 12px; align-items: flex-start; }
-        .notice-bar { width: 4px; border-radius: 2px; background: rgba(76, 107, 69, 0.18); flex-shrink: 0; align-self: stretch; overflow: hidden; position: relative; }
-        .notice-bar-fill { position: absolute; top: 0; right: 0; left: 0; height: 0%; background: var(--sage); }
+        .notice-bar { width: 4px; border-radius: 2px; background: rgba(79, 168, 160, 0.25); flex-shrink: 0; align-self: stretch; overflow: hidden; position: relative; }
+        .notice-bar-fill { position: absolute; top: 0; right: 0; left: 0; height: 100%; transform: scaleY(0); transform-origin: top; will-change: transform; background: var(--sage); }
         .notice-body { flex: 1; min-width: 0; }
         .notice-body h3 { font-size: 1.4rem; margin-bottom: 8px; color: var(--ink); }
         .notice-body p { font-size: 1.2rem; line-height: 1.6; color: var(--stone); }
@@ -360,8 +364,12 @@
         const LAT = 31.9438, LON = 34.8380;
 
         /* ===== שעון ===== */
+        let lastClockKey = '';
         function updateClock() {
             const now = new Date();
+            const clockKey = now.getDate() + ' ' + now.getHours() + ':' + now.getMinutes();
+            if (clockKey === lastClockKey) return; // אותה דקה - לא נוגעים ב-DOM
+            lastClockKey = clockKey;
             document.getElementById('clock').textContent =
                 String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
 
@@ -651,6 +659,9 @@
 
         function renderNewsTrack(items) {
             const track = document.getElementById('newsTrack');
+            const sig = items.map(i => i.title).join('|');
+            if (sig === window.__newsSig && track.classList.contains('scrolling')) return; // אותן כותרות - הגלילה ממשיכה בלי איפוס
+            window.__newsSig = sig;
             const itemsHtml = items.map(item => {
                 const time = new Date(item.pubDate).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
                 return `<div class="news-item">
@@ -706,11 +717,11 @@
 
             const fill = document.getElementById('noticeBarFill');
             fill.style.transition = 'none';
-            fill.style.height = '0%';
+            fill.style.transform = 'scaleY(0)';
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    fill.style.transition = `height ${NOTICE_DURATION}ms linear`;
-                    fill.style.height = '100%';
+                    fill.style.transition = `transform ${NOTICE_DURATION}ms linear`;
+                    fill.style.transform = 'scaleY(1)';
                 });
             });
         }
@@ -744,12 +755,17 @@
             }
         }
 
+        let lastFitKey = '';
+        function fitKey(rows) { return window.innerWidth + 'x' + window.innerHeight + ':' + rows.scrollHeight + ':' + rows.clientHeight; }
         function fitToScreen() {
             const wrapper = document.getElementById('scaleWrapper');
             const rows = wrapper.querySelector('.content-rows');
 
             // מסך צר (טלפון) - פריסה אנכית רגילה, בלי הגדלה
             if (window.innerWidth < 769) { applyScale(wrapper, 1); return; }
+
+            // לא השתנה כלום מאז ההתאמה האחרונה - אין מה לעשות (בלי כתיבה ל-DOM ובלי חישובי פריסה מיותרים)
+            if (fitKey(rows) === lastFitKey) return;
 
             // התחלה: הגדלה לפי רוחב המסך האמיתי
             let ratio = Math.min(MAX_RATIO, Math.max(MIN_RATIO, window.innerWidth / REFERENCE_WIDTH));
@@ -763,6 +779,7 @@
                 ratio = Math.max(MIN_RATIO, ratio * (have / need) * 0.995);
                 applyScale(wrapper, ratio);
             }
+            lastFitKey = fitKey(rows);
         }
         window.addEventListener('load', fitToScreen);
         window.addEventListener('resize', fitToScreen);
