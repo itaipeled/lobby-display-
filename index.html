@@ -271,7 +271,7 @@
         .notice-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--hairline); }
         .notice-dot.active { background: var(--sage); }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
 </head>
 <body>
 
@@ -451,16 +451,28 @@
                 });
             }
 
+            // ?nomusic בכתובת = בלי רדיו (לבדיקה אם הרדיו גורם לתקיעות)
+            if (/[?&]nomusic\b/.test(location.search)) return;
+
             if (window.Hls && Hls.isSupported()) {
-                const hls = new Hls();
+                // מגבלות זיכרון: בלי הגבלה hls.js שומר את כל האודיו שכבר הושמע, ואחרי כמה ימים
+                // טלוויזיה חלשה נחנקת (איסוף זיכרון) - זה מה שגורם לגלילה להיעצר כל שנייה-שתיים
+                const hls = new Hls({
+                    enableWorker: true,
+                    backBufferLength: 10,
+                    maxBufferLength: 20,
+                    maxMaxBufferLength: 30,
+                    maxBufferSize: 5 * 1000 * 1000
+                });
                 hls.loadSource(STREAM_URL);
                 hls.attachMedia(audio);
-                hls.on(Hls.Events.MANIFEST_PARSED, tryPlay);
+                let firstPlay = true;
+                hls.on(Hls.Events.MANIFEST_PARSED, () => { if (firstPlay) { firstPlay = false; tryPlay(); } else { audio.play().catch(() => {}); } });
                 hls.on(Hls.Events.ERROR, function (event, data) {
-                    if (data.fatal) {
-                        console.error('HLS fatal error, retrying...', data);
-                        setTimeout(() => hls.loadSource(STREAM_URL), 5000);
-                    }
+                    if (!data.fatal) return;
+                    console.error('HLS fatal error, recovering...', data);
+                    if (data.type === Hls.ErrorTypes.MEDIA_ERROR) { hls.recoverMediaError(); }
+                    else { setTimeout(() => hls.loadSource(STREAM_URL), 5000); }
                 });
             } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
                 // תמיכה טבעית (Safari / iOS)
@@ -785,6 +797,13 @@
         window.addEventListener('load', fitToScreen);
         window.addEventListener('resize', fitToScreen);
         setTimeout(fitToScreen, 800);
+        // רענון יומי אוטומטי בשעה 04:00 - מנקה זיכרון שמצטבר אחרי ימים של פעולה רצופה
+        (function scheduleDailyReload() {
+            const now = new Date(), next = new Date(now);
+            next.setHours(4, 0, 0, 0);
+            if (next <= now) next.setDate(next.getDate() + 1);
+            setTimeout(() => location.reload(), next - now);
+        })();
         setInterval(fitToScreen, 5000); // תיקון אוטומטי כשהתוכן משתנה (תחזית שנטענה, הודעה אחרת)
     </script>
 </body>
