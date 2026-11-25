@@ -271,6 +271,56 @@
         .notice-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--hairline); }
         .notice-dot.active { background: var(--sage); }
 
+        /* ===== חנוכייה (מחליפה את התחזית ל-3 ימים בימי חנוכה בלבד) ===== */
+        .hanukkah-card {
+            display: none; flex: 1; min-width: 360px; align-items: center; justify-content: space-between; gap: 14px;
+            background-color: var(--panel); border: 1px solid var(--hairline); border-radius: 10px;
+            border-right: 4px solid var(--brass); box-shadow: 0 2px 8px rgba(43, 38, 32, 0.06);
+            padding: 12px 18px;
+        }
+        .hanukkah-card.on { display: flex; }
+        /* מצב וידאו: הסרטון/התמונה ממלאים את כל הכרטיס, הטקסט מעליהם מימין */
+        .hanukkah-card.video { position: relative; overflow: hidden; background: #0b1029; min-height: 175px; border: none; border-right: 4px solid var(--brass); }
+        .hk-media { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: 0% 50%; display: none; }
+        .hanukkah-card.video .hk-media.show { display: block; }
+        .hanukkah-card.video .hk-art { display: none; }
+        .hanukkah-card.video .hk-text { position: relative; z-index: 1; flex: 0 0 46%; margin-right: 0; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6); }
+        .hanukkah-card.video .hk-greet { color: #f5c35a; }
+        .hanukkah-card.video .hk-night { color: #fff8e8; }
+        .hanukkah-card.video .hk-time { color: #d9cdb5; }
+        .hanukkah-card.video .hk-time b { color: #ffffff; }
+        .hk-text { text-align: center; flex: 1; min-width: 0; }
+        .hk-greet { font-size: 1.15rem; color: var(--brass-deep); font-weight: 600; }
+        .hk-night { font-family: 'Frank Ruhl Libre', serif; font-size: 1.75rem; font-weight: 900; color: var(--ink); margin: 2px 0 4px; white-space: nowrap; }
+        .hk-time { font-size: 1.3rem; color: var(--stone); white-space: nowrap; }
+        .hk-time b { color: var(--ink); font-variant-numeric: tabular-nums; }
+        .hk-art { position: relative; width: 210px; height: 129px; flex-shrink: 0; direction: ltr; }
+        .hk-art svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        /* להבות ריאליסטיות: צורה ב-SVG סטטי, התנועה רק ב-transform/opacity (לא מכביד על הטלוויזיה) */
+        .hk-flame { position: absolute; width: 5.6%; height: 19%; margin-left: -2.8%; }
+        .hk-glow {
+            position: absolute; left: -170%; right: -170%; top: -45%; bottom: -60%; border-radius: 50%;
+            background: radial-gradient(circle at 50% 58%, rgba(255, 196, 96, 0.55) 0%, rgba(255, 160, 60, 0.18) 38%, rgba(255, 150, 50, 0) 68%);
+            will-change: opacity; animation: hkGlow 1.2s linear infinite;
+        }
+        .hk-fl { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: 50% 92%; will-change: transform; animation: hkFlame 1.4s ease-in-out infinite; }
+        .hk-fl svg { display: block; width: 100%; height: 100%; overflow: visible; }
+        @keyframes hkFlame {
+            0%, 100% { transform: scale(1, 1) rotate(0deg); }
+            10% { transform: scale(0.95, 1.06) rotate(1.4deg); }
+            21% { transform: scale(1.04, 0.93) rotate(-0.8deg); }
+            33% { transform: scale(0.93, 1.11) rotate(2deg); }
+            44% { transform: scale(1.02, 0.97) rotate(-1.6deg); }
+            56% { transform: scale(0.97, 1.07) rotate(0.5deg); }
+            67% { transform: scale(1.05, 0.92) rotate(-2.2deg); }
+            79% { transform: scale(0.94, 1.09) rotate(1.1deg); }
+            90% { transform: scale(1.01, 0.98) rotate(-0.6deg); }
+        }
+        @keyframes hkGlow {
+            0%, 100% { opacity: 0.75; } 14% { opacity: 1; } 29% { opacity: 0.82; } 43% { opacity: 0.97; }
+            57% { opacity: 0.7; } 71% { opacity: 0.93; } 86% { opacity: 0.8; }
+        }
+
         /* ===== מודעת אירוע במסך מלא (מופיעה מדי פעם, נעלמת לבד אחרי האירוע) ===== */
         .event-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 50;
@@ -359,6 +409,17 @@
             </div>
 
             <div class="weather-row">
+                <div class="hanukkah-card" id="hanukkahCard">
+                    <!-- קבצי החנוכייה במאגר: hk-1.mp4 ... hk-8.mp4 (הנרות של אותו ערב דולקים) ו-hk-unlit.jpg (לפני הדלקה) -->
+                    <video class="hk-media" id="hkVideo" muted loop playsinline preload="auto"></video>
+                    <img class="hk-media" id="hkImg" alt="">
+                    <div class="hk-text">
+                        <div class="hk-greet">חנוכה שמח!</div>
+                        <div class="hk-night" id="hkNight"></div>
+                        <div class="hk-time"><span id="hkLabel"></span> <b id="hkTime"></b></div>
+                    </div>
+                    <div class="hk-art" id="hkArt"></div>
+                </div>
                 <div class="forecast-cards" id="forecastCards">
                     <div class="forecast-card"><div class="day-name">...</div></div>
                 </div>
@@ -840,6 +901,193 @@
             setTimeout(freshReload, next - now);
         })();
         setInterval(fitToScreen, 5000); // תיקון אוטומטי כשהתוכן משתנה (תחזית שנטענה, הודעה אחרת)
+
+        /* ===== חנוכייה: בימי חנוכה מחליפה את התחזית. מספר הנרות לפי הערב, הנרות נדלקים בזמן ההדלקה =====
+           זמן הדלקה: שקיעה (ימי חול), לפני כניסת שבת (שישי), אחרי צאת שבת (מוצ"ש). מחושב מקומית - בלי אינטרנט.
+           לבדיקה: ?hanukkah=5 מציג נר חמישי דולק, ?hanukkah=5&unlit - לפני ההדלקה */
+        (function initHanukkah() {
+            const card = document.getElementById('hanukkahCard');
+            const forecast = document.getElementById('forecastCards');
+            if (!card) return;
+            const ORD = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שביעי', 'שמיני'];
+            const SLOTS = [240, 214, 188, 162, 98, 72, 46, 20];   // הנר הראשון בקצה הימני, וממשיכים שמאלה
+            const FALLBACK = { 2026: [11, 4], 2027: [11, 24], 2028: [11, 12], 2029: [11, 1], 2030: [11, 20] }; // ערב נר ראשון
+            const dayStart = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+            const firstNightCache = {};
+            function firstNight(year) {   // היום (לוח לועזי) שבערבו מדליקים נר ראשון = כ"ד כסלו
+                if (year in firstNightCache) return firstNightCache[year];
+                let found = null;
+                try {
+                    const f = new Intl.DateTimeFormat('en-u-ca-hebrew', { month: 'long', day: 'numeric' });
+                    for (let d = new Date(year, 10, 15); d < new Date(year + 1, 0, 1); d.setDate(d.getDate() + 1)) {
+                        if (f.format(d) === '24 Kislev') { found = new Date(d); break; }
+                    }
+                } catch (e) {}
+                if (!found && FALLBACK[year]) found = new Date(year, FALLBACK[year][0], FALLBACK[year][1]);
+                return (firstNightCache[year] = found);
+            }
+            function nightNumber(now) {
+                const today = dayStart(now);
+                for (const y of [now.getFullYear(), now.getFullYear() - 1]) {
+                    const f = firstNight(y);
+                    if (!f) continue;
+                    const n = Math.round((today - f) / 86400000) + 1;
+                    if (n >= 1 && n <= 8) return n;
+                }
+                return 0;
+            }
+            // זמן שקיעה / צאת הכוכבים (zenith במעלות) ליום נתון - אלגוריתם אסטרונומי סטנדרטי
+            function sunDown(date, zenith) {
+                const rad = Math.PI / 180, y = date.getFullYear(), m = date.getMonth(), d = date.getDate();
+                const N = Math.round((Date.UTC(y, m, d) - Date.UTC(y, 0, 0)) / 86400000);
+                const lngHour = LON / 15, t = N + (18 - lngHour) / 24;
+                const M = 0.9856 * t - 3.289;
+                let L = (M + 1.916 * Math.sin(M * rad) + 0.020 * Math.sin(2 * M * rad) + 282.634 + 360) % 360;
+                let RA = (Math.atan(0.91764 * Math.tan(L * rad)) / rad + 360) % 360;
+                RA = (RA + Math.floor(L / 90) * 90 - Math.floor(RA / 90) * 90) / 15;
+                const sinDec = 0.39782 * Math.sin(L * rad), cosDec = Math.cos(Math.asin(sinDec));
+                const cosH = (Math.cos(zenith * rad) - sinDec * Math.sin(LAT * rad)) / (cosDec * Math.cos(LAT * rad));
+                const H = Math.acos(cosH) / rad / 15;
+                const UT = ((H + RA - 0.06571 * t - 6.622 - lngHour) % 24 + 24) % 24;
+                return new Date(Date.UTC(y, m, d) + UT * 3600000);
+            }
+            const fmtT = d => d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jerusalem' });
+            let fridayKnown = null;
+            function lightingTime(now) {
+                const dow = now.getDay();
+                if (dow === 6) return ['אחרי צאת שבת', sunDown(now, 98.5)];
+                if (dow === 5) {
+                    // עדיף את זמן כניסת השבת שכבר מוצג במסך (מ-Hebcal), כל עוד הוא של היום
+                    const txt = (document.getElementById('candleTime') || {}).textContent || '';
+                    const m = txt.match(/^(\d{1,2}):(\d{2})$/);
+                    if (m) {
+                        const t = new Date(now); t.setHours(+m[1], +m[2], 0, 0);
+                        if (t > now) fridayKnown = { day: dayStart(now).getTime(), t };
+                    }
+                    if (fridayKnown && fridayKnown.day === dayStart(now).getTime()) return ['לפני כניסת שבת', fridayKnown.t];
+                    return ['לפני כניסת שבת', new Date(sunDown(now, 90.833).getTime() - 18 * 60000)];
+                }
+                return ['הדלקת נרות', sunDown(now, 90.833)];
+            }
+            function artHtml(n, lit) {
+                const cand = SLOTS.slice(0, n);
+                let svg = `<svg viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg">
+                    <defs><linearGradient id="hkMetal" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#e3bf73"/><stop offset="1" stop-color="#9c6b30"/></linearGradient>
+                    <linearGradient id="hkWax" x1="0" x2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e6ddcb"/></linearGradient>
+                    <radialGradient id="hkOuter" cx="0.5" cy="0.74" r="0.78"><stop offset="0" stop-color="#fffbe8"/><stop offset="0.24" stop-color="#ffe27c"/><stop offset="0.52" stop-color="#ffad2e"/><stop offset="0.82" stop-color="#ff6a10" stop-opacity="0.92"/><stop offset="1" stop-color="#ff5000" stop-opacity="0"/></radialGradient>
+                    <radialGradient id="hkCore" cx="0.5" cy="0.72" r="0.6"><stop offset="0" stop-color="#ffffff"/><stop offset="0.6" stop-color="#fff8d8"/><stop offset="1" stop-color="#ffe9a0" stop-opacity="0.2"/></radialGradient></defs>
+                    <rect x="94" y="150" width="72" height="7" rx="3.5" fill="url(#hkMetal)"/>
+                    <path d="M104 150 L156 150 L144 136 L116 136 Z" fill="url(#hkMetal)"/>
+                    <rect x="126" y="52" width="8" height="86" fill="url(#hkMetal)"/>
+                    <rect x="12" y="90" width="236" height="7" rx="3.5" fill="url(#hkMetal)"/>`;
+                for (const x of SLOTS) svg += `<rect x="${x - 8}" y="82" width="16" height="9" rx="2" fill="url(#hkMetal)"/>`;
+                svg += `<rect x="121" y="44" width="18" height="9" rx="2" fill="url(#hkMetal)"/>`;
+                const candle = (x, top, bottom) => `<rect x="${x - 4.5}" y="${top}" width="9" height="${bottom - top}" rx="1.5" fill="url(#hkWax)" stroke="#cdbf9f" stroke-width="0.8"/>
+                    <line x1="${x}" y1="${top - 5}" x2="${x}" y2="${top}" stroke="#3a2e22" stroke-width="1.6" stroke-linecap="round"/>`;
+                svg += candle(130, 30, 44);
+                for (const x of SLOTS) svg += candle(x, 52, 82);   // כל 8 הנרות עומדים, רק של הערב דולקים
+                svg += '</svg>';
+                let flames = '';
+                if (lit) {
+                    const r = (a, b) => (a + Math.random() * (b - a)).toFixed(2);
+                    const flame = (x, wickTop) => `<div class="hk-flame" style="left:${(x / 260 * 100).toFixed(2)}%;top:${((wickTop + 3 - 30.4) / 160 * 100).toFixed(2)}%">
+                        <i class="hk-glow" style="animation-duration:${r(0.9, 1.5)}s;animation-delay:-${r(0, 1.5)}s"></i>
+                        <div class="hk-fl" style="animation-duration:${r(1.1, 1.8)}s;animation-delay:-${r(0, 1.8)}s"><svg viewBox="0 0 10 20">
+                            <path d="M5 0 C5.6 4 9.6 8 9.6 13.5 C9.6 17 7.6 19.6 5 19.6 C2.4 19.6 0.4 17 0.4 13.5 C0.4 8 4.4 4 5 0 Z" fill="url(#hkOuter)"/>
+                            <path d="M5 7 C5.4 9.5 7.3 12 7.3 15 C7.3 17.3 6.3 18.6 5 18.6 C3.7 18.6 2.7 17.3 2.7 15 C2.7 12 4.6 9.5 5 7 Z" fill="url(#hkCore)"/>
+                            <ellipse cx="5" cy="18.4" rx="1.7" ry="1.2" fill="rgba(90,130,255,0.5)"/>
+                        </svg></div></div>`;
+                    flames += flame(130, 25);
+                    for (const x of cand) flames += flame(x, 47);
+                }
+                return svg + flames;
+            }
+            const force = location.search.match(/[?&]hanukkah=([1-8])/);
+            let lastSig = '';
+            // וידאו: אם קובץ חסר/לא נתמך - חוזרים לחנוכייה המצוירת
+            const vid = document.getElementById('hkVideo'), img = document.getElementById('hkImg');
+            const seasonKey = String(new Date().getMonth() === 0 ? new Date().getFullYear() - 1 : new Date().getFullYear());
+            let badStored = null; try { badStored = localStorage.getItem('hkVideoBad'); } catch (e) {}
+            let mediaFailed = /[?&]novideo\b/.test(location.search) || badStored === seasonKey;
+            // בדיקה עצמית בהדלקה הראשונה: אם הסטרימר מתקשה עם הסרטון - עוברים לגרסה המצוירת עד סוף החג
+            let healthChecked = false;
+            function healthCheck() {
+                if (healthChecked || force || document.hidden) return;
+                healthChecked = true;
+                setTimeout(() => {
+                    if (mediaFailed || vid.paused && !vid.getAttribute('src')) return;
+                    let frames = 0, long = 0, updates = 0, last = performance.now();
+                    const end = last + 20000;
+                    const q0 = vid.getVideoPlaybackQuality ? vid.getVideoPlaybackQuality() : null;
+                    const onUpd = () => updates++;
+                    vid.addEventListener('timeupdate', onUpd);
+                    function tick(now) {
+                        frames++; if (now - last > 80) long++; last = now;
+                        if (now < end) requestAnimationFrame(tick); else finish();
+                    }
+                    function finish() {
+                        vid.removeEventListener('timeupdate', onUpd);
+                        if (mediaFailed || !vid.getAttribute('src')) return;
+                        const q1 = vid.getVideoPlaybackQuality ? vid.getVideoPlaybackQuality() : null;
+                        let dropRate = 0;
+                        if (q0 && q1) { const tot = q1.totalVideoFrames - q0.totalVideoFrames; dropRate = tot > 0 ? (q1.droppedVideoFrames - q0.droppedVideoFrames) / tot : 1; }
+                        const stuck = updates < 15;
+                        const janky = frames > 0 && long / frames > 0.15;
+                        console.log('Hanukkah video check', { frames, long, updates, dropRate });
+                        if (stuck || janky || dropRate > 0.25) {
+                            try { localStorage.setItem('hkVideoBad', seasonKey); } catch (e) {}
+                            mediaFail();
+                        }
+                    }
+                    requestAnimationFrame(tick);
+                }, 5000);
+            }
+            function mediaFail() { if (mediaFailed) return; mediaFailed = true; console.warn('Hanukkah media failed - using drawn version'); stopVideo(); lastSig = ''; render(); }
+            vid.addEventListener('error', mediaFail);
+            img.addEventListener('error', mediaFail);
+            function stopVideo() { if (vid.getAttribute('src')) { vid.pause(); vid.removeAttribute('src'); vid.load(); } vid.classList.remove('show'); }
+            function showMedia(n, lit) {
+                if (lit) {
+                    const src = 'hk-' + n + '.mp4';
+                    if (vid.getAttribute('src') !== src) { vid.poster = 'hk-unlit.jpg'; vid.src = src; }
+                    vid.classList.add('show'); img.classList.remove('show');
+                    const p = vid.play(); if (p && p.catch) p.catch(() => {});
+                    healthCheck();
+                } else {
+                    stopVideo();
+                    const src = 'hk-unlit.jpg';
+                    if (img.getAttribute('src') !== src) img.src = src;
+                    img.classList.add('show');
+                }
+            }
+            function render() {
+                const now = new Date();
+                const n = force ? +force[1] : nightNumber(now);
+                if (!n) {
+                    if (lastSig !== 'off') { card.classList.remove('on'); forecast.style.display = ''; stopVideo(); lastSig = 'off'; }
+                    return;
+                }
+                const [label, t] = lightingTime(now);
+                const lit = force ? !/[?&]unlit\b/.test(location.search) : now >= t;
+                const timeTxt = isNaN(t) ? '' : fmtT(t);
+                const sig = n + '|' + lit + '|' + label + '|' + timeTxt + '|' + mediaFailed;
+                if (sig === lastSig) {   // בלי שינוי - לא נוגעים ב-DOM (רק מוודאים שהסרטון לא נעצר)
+                    if (lit && !mediaFailed && vid.paused) { const p = vid.play(); if (p && p.catch) p.catch(() => {}); }
+                    return;
+                }
+                lastSig = sig;
+                document.getElementById('hkNight').textContent = 'נר ' + ORD[n - 1] + ' של חנוכה';
+                document.getElementById('hkLabel').textContent = lit ? 'הודלק ב-' : label + ':';
+                document.getElementById('hkTime').textContent = timeTxt;
+                card.classList.toggle('video', !mediaFailed);
+                if (mediaFailed) document.getElementById('hkArt').innerHTML = artHtml(n, lit);
+                else { document.getElementById('hkArt').innerHTML = ''; showMedia(n, lit); }
+                forecast.style.display = 'none';
+                card.classList.add('on');
+            }
+            render();
+            setInterval(render, 30000);
+        })();
 
         /* ===== מודעת אירוע: מוצגת EVENT_SHOW_SEC שניות בכל EVENT_EVERY_SEC שניות, עד EVENT_UNTIL ===== */
         // ?poster בכתובת = המודעה מוצגת כל הזמן (לבדיקה)
