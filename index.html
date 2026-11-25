@@ -270,6 +270,27 @@
         .notice-dots { display: flex; gap: 8px; justify-content: center; margin-top: 14px; }
         .notice-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--hairline); }
         .notice-dot.active { background: var(--sage); }
+
+        /* ===== מודעת אירוע במסך מלא (מופיעה מדי פעם, נעלמת לבד אחרי האירוע) ===== */
+        .event-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 50;
+            display: flex; align-items: center; justify-content: center; gap: 4vw;
+            padding: 3vh 4vw; box-sizing: border-box;
+            background: #0d1530; color: #fff; direction: rtl;
+            opacity: 0; visibility: hidden;
+            transition: opacity 1s ease, visibility 0s linear 1s;
+        }
+        .event-overlay.show { opacity: 1; visibility: visible; transition: opacity 1s ease, visibility 0s; }
+        .event-poster { height: 100%; max-width: 45%; object-fit: contain; border-radius: 1vw; box-shadow: 0 0 3vw rgba(245, 179, 36, 0.25); }
+        .event-text { flex: 0 1 auto; max-width: 50%; text-align: center; font-family: 'Rubik', sans-serif; line-height: 1.25; }
+        .event-text > div + div { margin-top: 1.6vh; }
+        .ev-kicker { font-size: 2.4vw; color: #e8dcc4; }
+        .ev-title { font-family: 'Frank Ruhl Libre', serif; font-weight: 900; font-size: 4.2vw; color: #f5b324; }
+        .ev-when { font-size: 3.4vw; font-weight: 700; }
+        .ev-time { font-size: 6.5vw; font-weight: 800; color: #f5b324; direction: ltr; unicode-bidi: embed; line-height: 1.05; }
+        .ev-where { font-size: 3.4vw; font-weight: 700; }
+        .ev-extras { font-size: 2.3vw; color: #e8dcc4; }
+        .ev-from { font-size: 1.5vw; color: #9aa6c4; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
 </head>
@@ -277,6 +298,20 @@
 
     <!-- מוזיקת רקע - רדיו חי 100FM Cafe -->
     <audio id="bgMusic" preload="none"></audio>
+
+    <!-- מודעת אירוע: התמונה hanukkah-2026.jpg צריכה להיות במאגר, ליד index.html -->
+    <div class="event-overlay" id="eventOverlay">
+        <img class="event-poster" src="hanukkah-2026.jpg" alt="">
+        <div class="event-text">
+            <div class="ev-kicker">שכנים יקרים, מוזמנים עם כל המשפחה</div>
+            <div class="ev-title">טקס הדלקת נרות חנוכה</div>
+            <div class="ev-when">יום שלישי, כ״ח כסלו, 8.12</div>
+            <div class="ev-time">17:30</div>
+            <div class="ev-where">בלובי הבניין</div>
+            <div class="ev-extras">סופגניות · שירי חנוכה · הצגה · יצירה לילדים</div>
+            <div class="ev-from">ועד בית הברוש 7 · בית חב״ד המרכזי באר יעקב</div>
+        </div>
+    </div>
     
     <div class="scale-wrapper" id="scaleWrapper">
     <div class="header-bar">
@@ -802,9 +837,66 @@
             const now = new Date(), next = new Date(now);
             next.setHours(4, 0, 0, 0);
             if (next <= now) next.setDate(next.getDate() + 1);
-            setTimeout(() => location.reload(), next - now);
+            setTimeout(freshReload, next - now);
         })();
         setInterval(fitToScreen, 5000); // תיקון אוטומטי כשהתוכן משתנה (תחזית שנטענה, הודעה אחרת)
+
+        /* ===== מודעת אירוע: מוצגת EVENT_SHOW_SEC שניות בכל EVENT_EVERY_SEC שניות, עד EVENT_UNTIL ===== */
+        // ?poster בכתובת = המודעה מוצגת כל הזמן (לבדיקה)
+        const EVENT_UNTIL = new Date(2026, 11, 8, 20, 0);   // 8.12.2026 בשעה 20:00 (החודש נספר מ-0: 11 = דצמבר)
+        const EVENT_SHOW_SEC = 15;
+        const EVENT_EVERY_SEC = 60;
+        (function initEventOverlay() {
+            const ov = document.getElementById('eventOverlay');
+            if (!ov) return;
+            const active = () => Date.now() < EVENT_UNTIL.getTime();
+            if (!active()) { ov.remove(); return; }
+            const img = ov.querySelector('img');
+            img.addEventListener('error', () => { img.style.display = 'none'; }); // אם התמונה לא הועלתה - רק הטקסט
+            if (/[?&]poster\b/.test(location.search)) { ov.classList.add('show'); return; }
+            function cycle() {
+                if (!active()) { ov.classList.remove('show'); return; }
+                ov.classList.add('show');
+                setTimeout(() => ov.classList.remove('show'), EVENT_SHOW_SEC * 1000);
+            }
+            setTimeout(cycle, 20000);
+            setInterval(cycle, EVENT_EVERY_SEC * 1000);
+        })();
+
+        /* ===== עדכון אוטומטי: הדף בודק כל 2 דקות אם index.html במאגר השתנה, ואם כן - נטען מחדש לבד ===== */
+        function freshReload() {
+            const u = new URL(location.href);
+            u.searchParams.set('v', Date.now()); // כתובת חדשה = עוקף את המטמון של הדפדפן
+            location.replace(u.toString());
+        }
+        (function initAutoUpdate() {
+            if (location.protocol === 'file:') return;
+            const ownCode = Array.from(document.querySelectorAll('style, script:not([src])')).map(e => e.textContent);
+            let lastHash = null;
+            const hash = s => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return h; };
+            async function check() {
+                try {
+                    const res = await fetch(location.pathname + '?check=' + Date.now(), { cache: 'no-store' });
+                    if (!res.ok) return;
+                    const txt = (await res.text()).replace(/\r\n?/g, '\n');
+                    if (!txt.includes('</html>') || !txt.includes('scaleWrapper')) return; // קובץ חלקי/שגוי - לא נוגעים
+                    const h = hash(txt);
+                    // בבדיקה הראשונה: האם הקוד שרץ עכשיו זהה לקובץ במאגר. אחר כך: האם הקובץ במאגר השתנה
+                    const outdated = lastHash === null ? ownCode.some(c => !txt.includes(c)) : h !== lastHash;
+                    if (outdated) {
+                        let last = 0;
+                        try { last = +localStorage.getItem('lastAutoReload') || 0; } catch (e) {}
+                        if (Date.now() - last < 10 * 60 * 1000) return; // הגנה מלולאת רענונים
+                        try { localStorage.setItem('lastAutoReload', String(Date.now())); } catch (e) {}
+                        freshReload();
+                        return;
+                    }
+                    lastHash = h;
+                } catch (e) {}
+            }
+            setTimeout(check, 30000);
+            setInterval(check, 2 * 60 * 1000);
+        })();
     </script>
 </body>
 </html>
